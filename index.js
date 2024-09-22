@@ -1,78 +1,51 @@
-<!DOCTYPE html>
-<html lang="en">
+document.addEventListener('DOMContentLoaded', function () {
+    const dobInput = document.getElementById('dob');
+    const today = new Date();
+    const minAge = 18;
+    const maxAge = 55;
+    const minDate = new Date(today.getFullYear() - maxAge, today.getMonth(), today.getDate());
+    const maxDate = new Date(today.getFullYear() - minAge, today.getMonth(), today.getDate());
 
-<head>
-    <meta charset="UTF-8">
-    <title>Registration Form</title>
-    <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
+    dobInput.setAttribute('min', minDate.toISOString().split('T')[0]);
+    dobInput.setAttribute('max', maxDate.toISOString().split('T')[0]);
+    loadSavedData();
 
-        th,
-        td {
-            border: 1px solid black;
-            padding: 8px;
-            text-align: left
-        }
+    document.getElementById('registrationForm').addEventListener('submit', function (event) {
+        event.preventDefault();
+        const name = document.getElementById('name').value;
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const dob = document.getElementById('dob').value;
+        const acceptTerms = document.getElementById('acceptTerms').checked ? "true" : "false";
 
-        .submit-button {
-            background-color: green;
-            color: white;
-        }
+        const formData = { name, email, password, dob, acceptTerms };
 
-        th {
-            background-color: aliceblue;
-        }
+        let storedData = JSON.parse(localStorage.getItem('registrationData')) || [];
+        storedData.push(formData);
+        localStorage.setItem('registrationData', JSON.stringify(storedData));
 
-        .table-heading {
-            text-align: center;
-            font-weight: bold;
-        }
-    </style>
-</head>
+        populateTable(storedData);
 
-<body>
-    <h1>Registration Form</h1>
-
-    <form id="registrationForm">
-        <label for="name">Name</label>
-        <input type="text" id="name" name="name" required><br><br>
-
-        <label for="email">Email</label>
-        <input type="email" id="email" name="email" required><br><br>
-
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required><br><br>
-
-        <label for="dob">Date of Birth</label>
-        <input type="date" id="dob" name="dob" required><br><br>
-
-        <input type="checkbox" id="acceptTerms" name="acceptTerms" required>
-        <label for="acceptTerms">Accept Terms & Conditions</label><br><br>
-
-        <button type="submit" class="submit-button">Submit</button>
-    </form>
-    <button class="clear-button" id="clearButton">Clear Table</button>
-    <div class="table-heading" colspan="5">ENTRIES</div>
-    <table id="dataTable">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Password</th>
-                <th>Dob</th>
-                <th>Accepted Terms?</th>
-            </tr>
-        </thead>
-        <tbody>
-
-        </tbody>
-    </table>
-    <script src="index.js"></script>
-
-</body>
-
-</html>
+        document.getElementById('registrationForm').reset();
+    });
+    function populateTable(data) {
+        const tableBody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
+        tableBody.innerHTML = '';
+        data.forEach(entry => {
+            const newRow = tableBody.insertRow();
+            newRow.insertCell(0).textContent = entry.name;
+            newRow.insertCell(1).textContent = entry.email;
+            newRow.insertCell(2).textContent = entry.password;
+            newRow.insertCell(3).textContent = entry.dob;
+            newRow.insertCell(4).textContent = entry.acceptTerms;
+        });
+    }
+    function loadSavedData() {
+        const savedData = JSON.parse(localStorage.getItem('registrationData')) || [];
+        populateTable(savedData);
+    }
+    document.getElementById('clearButton').addEventListener('click', function () {
+        localStorage.removeItem('registrationData');
+        populateTable([]);
+    });
+});
